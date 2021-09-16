@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const {uuid, isUuid} = require('uuidv4')
 
 // const { v4: uuid, validate: isUuid } = require('uuid');
 
@@ -11,23 +12,65 @@ app.use(cors());
 const repositories = [];
 
 app.get("/repositories", (request, response) => {
-  // TODO
+  return response.json(repositories);
 });
 
 app.post("/repositories", (request, response) => {
-  // TODO
+  const {title, url, techs} = request.body;
+  const repository = {id: uuid(), title, url, techs, likes:0};
+  repositories.push(repository);
+
+  return response.json(repository);
 });
 
 app.put("/repositories/:id", (request, response) => {
-  // TODO
+  const {id} = request.params;
+  const {title, url, techs} = request.body;
+
+  const repositoryIndexId = repositories.findIndex(repository => repository.id === id);
+  
+  if(repositoryIndexId === -1){
+    return response.status(400).json({ error: 'Repository does not exists. '})
+  }
+
+  const repository = { 
+    id, 
+    title, 
+    url, 
+    techs, 
+    likes: repositories[repositoryIndexId]["likes"]
+  };
+
+  repositories[repositoryIndexId]= repository;
+  return response.json(repository);
 });
 
 app.delete("/repositories/:id", (request, response) => {
-  // TODO
+  const {id} = request.params;
+
+  const repositoryIndexId = repositories.findIndex(repository => repository.id === id);
+  
+  if(repositoryIndexId >= 0){
+    repositories.splice(repositoryIndexId, 1);
+  }
+  else{
+    return response.status(400).json({})
+  }
+  return response.status(204).send();
 });
 
 app.post("/repositories/:id/like", (request, response) => {
-  // TODO
+  const {id} = request.params;
+
+  const repositoryIndexId = repositories.findIndex(repository => repository.id === id);
+
+  if(repositoryIndexId === -1){
+    return response.status(400).json({ error: 'Repository does not exists. '})
+  }
+
+  repositories[repositoryIndexId].likes++;
+  return response.json(repositories[repositoryIndexId]);
+
 });
 
 module.exports = app;
